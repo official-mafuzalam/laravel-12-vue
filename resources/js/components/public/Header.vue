@@ -54,7 +54,7 @@ const components: { title: string; href: string; description: string }[] = [
 ];
 
 // route helpers
-const dashboard = () => '/dashboard';
+const dashboard = () => '/admin-dashboard';
 const login = () => '/login';
 const register = () => '/register';
 </script>

@@ -1,6 +1,6 @@
 <!-- resources/js/Pages/Welcome.vue -->
 <script setup lang="ts">
-import MainLayout from '@/Layouts/PublicLayout.vue';
+import MainLayout from '@/layouts/PublicLayout.vue';
 import { Head } from '@inertiajs/vue3';
 </script>
 
