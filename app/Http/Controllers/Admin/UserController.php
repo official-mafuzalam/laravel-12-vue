@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users= User::all();
+        $users = User::all();
         return Inertia::render('admin/Users/Index', [
             'users' => $users
         ]);
@@ -55,9 +55,19 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(User $user)
     {
-        //
+        return Inertia::render('admin/Users/Edit', [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role, // if you have role field
+                'status' => $user->status, // if you have status field
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+            ],
+        ]);
     }
 
     /**

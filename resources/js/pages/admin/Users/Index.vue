@@ -11,9 +11,10 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
-import { index, create, edit, show } from '@/routes/admin/users';
+import { create, destroy, edit, index, show } from '@/routes/admin/users';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
+import { Edit, Eye, Trash } from 'lucide-vue-next';
 
 // ✅ Receive users from Laravel (Inertia props)
 const props = defineProps<{
@@ -77,22 +78,24 @@ const users = props.users;
                                 <TableCell>{{ user.id }}</TableCell>
                                 <TableCell>{{ user.name }}</TableCell>
                                 <TableCell>{{ user.email }}</TableCell>
-                                <TableCell class="space-x-3 flex justify-end">
+                                <TableCell class="flex justify-end space-x-3">
                                     <Link
-                                        :href="
-                                            edit(user.id)
-                                        "
-                                        class="text-blue-500 hover:underline"
-                                    >
-                                        Edit
-                                    </Link>
-                                    <Link
-                                        :href="
-                                            show(user.id)
-                                        "
+                                        :href="show(user.id)"
                                         class="text-green-500 hover:underline"
                                     >
-                                        View
+                                        <Eye class="inline h-4 w-4" />
+                                    </Link>
+                                    <Link
+                                        :href="edit(user.id)"
+                                        class="text-blue-500 hover:underline"
+                                    >
+                                        <Edit class="inline h-4 w-4" />
+                                    </Link>
+                                    <Link
+                                        :href="destroy(user.id)"
+                                        class="text-red-500 hover:underline"
+                                    >
+                                        <Trash class="inline h-4 w-4" />
                                     </Link>
                                 </TableCell>
                             </TableRow>
