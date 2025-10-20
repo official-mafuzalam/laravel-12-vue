@@ -14,7 +14,24 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::all()->map(function ($user) {
+            $lastSeenDetailed = $user->getLastSeenDetailed();
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'status' => $user->status,
+                'is_online' => $user->isOnline(),
+                'online_status' => $user->getOnlineStatus(),
+                'last_seen_at' => $user->last_seen_at,
+                'last_seen_text' => $user->getLastSeenText(),
+                'last_seen_detailed' => $lastSeenDetailed,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+            ];
+        });
+
         return Inertia::render('admin/Users/Index', [
             'users' => $users
         ]);
