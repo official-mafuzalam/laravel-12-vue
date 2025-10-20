@@ -11,9 +11,8 @@ import {
 import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '../AppLogoIcon.vue';
 
-// ✅ Access Vite env variable in script
+// ✅ App name from .env
 const appName = import.meta.env.VITE_APP_NAME || 'My App';
-
 const page = usePage();
 
 const components: { title: string; href: string; description: string }[] = [
@@ -33,7 +32,7 @@ const components: { title: string; href: string; description: string }[] = [
         title: 'Progress',
         href: '/docs/components/progress',
         description:
-            'Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.',
+            'Displays an indicator showing the completion progress of a task.',
     },
     {
         title: 'Scroll-area',
@@ -44,17 +43,17 @@ const components: { title: string; href: string; description: string }[] = [
         title: 'Tabs',
         href: '/docs/components/tabs',
         description:
-            'A set of layered sections of content—known as tab panels—that are displayed one at a time.',
+            'A set of layered sections of content displayed one at a time.',
     },
     {
         title: 'Tooltip',
         href: '/docs/components/tooltip',
         description:
-            'A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.',
+            'A popup that displays information related to an element when hovered.',
     },
 ];
 
-// Simple route helpers used by the template — replace with your route generator if needed
+// route helpers
 const dashboard = () => '/dashboard';
 const login = () => '/login';
 const register = () => '/register';
@@ -69,7 +68,7 @@ const register = () => '/register';
         >
             <!-- Brand / Logo -->
             <div class="flex items-center space-x-2">
-                <AppLogoIcon class="mr-2 size-8 fill-current text-white" />
+                <AppLogoIcon class="mr-2 size-8 fill-current text-amber-500" />
                 <h1
                     class="text-lg font-semibold text-gray-800 dark:text-gray-100"
                 >
@@ -80,39 +79,58 @@ const register = () => '/register';
             <!-- Nav Links -->
             <NavigationMenu>
                 <NavigationMenuList>
-                    <NavigationMenuItem>
+                    <!-- Centered Dropdown Menu -->
+                    <NavigationMenuItem class="relative">
                         <NavigationMenuTrigger
                             >Components</NavigationMenuTrigger
                         >
-                        <NavigationMenuContent>
-                            <ul
-                                class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]"
-                            >
+                        <NavigationMenuContent
+                            class="absolute left-1/2 z-50 mt-2 w-[400px] -translate-x-1/2 rounded-lg border border-gray-200 bg-white shadow-lg md:w-[500px] lg:w-[600px] dark:border-gray-700 dark:bg-gray-800"
+                        >
+                            <ul class="grid gap-3 p-4 md:grid-cols-2">
                                 <li
                                     v-for="component in components"
                                     :key="component.title"
                                 >
                                     <NavigationMenuLink as-child>
-                                        <a
+                                        <Link
                                             :href="component.href"
-                                            class="block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                            class="block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-amber-50 hover:text-amber-700 focus:bg-amber-50 focus:text-amber-700 dark:hover:bg-gray-700 dark:focus:bg-gray-700"
                                         >
-                                            <div
-                                                class="text-sm leading-none font-medium"
-                                            >
+                                            <div class="text-sm font-medium">
                                                 {{ component.title }}
                                             </div>
                                             <p
-                                                class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                                                class="line-clamp-2 text-sm text-muted-foreground"
                                             >
                                                 {{ component.description }}
                                             </p>
-                                        </a>
+                                        </Link>
                                     </NavigationMenuLink>
                                 </li>
                             </ul>
                         </NavigationMenuContent>
                     </NavigationMenuItem>
+
+                    <NavigationMenuItem className="hidden md:block">
+                        <NavigationMenuTrigger>Simple</NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                            <ul className="grid w-[200px] gap-4">
+                                <li>
+                                    <NavigationMenuLink asChild>
+                                        <Link href="#">Components</Link>
+                                    </NavigationMenuLink>
+                                    <NavigationMenuLink asChild>
+                                        <Link href="#">Documentation</Link>
+                                    </NavigationMenuLink>
+                                    <NavigationMenuLink asChild>
+                                        <Link href="#">Blocks</Link>
+                                    </NavigationMenuLink>
+                                </li>
+                            </ul>
+                        </NavigationMenuContent>
+                    </NavigationMenuItem>
+
                     <NavigationMenuItem>
                         <NavigationMenuLink
                             href="/docs/introduction"
@@ -121,18 +139,19 @@ const register = () => '/register';
                             Documentation
                         </NavigationMenuLink>
                     </NavigationMenuItem>
+
+                    <!-- Auth buttons -->
                     <Link
                         v-if="page.props.auth && page.props.auth.user"
                         :href="dashboard()"
-                        class="rounded-md border border-transparent bg-amber-500 px-5 py-2 text-sm font-medium text-white hover:bg-amber-600 focus:ring-2 focus:ring-amber-400 focus:outline-none dark:bg-amber-600 dark:hover:bg-amber-500"
+                        class="rounded-md bg-amber-500 px-5 py-2 text-sm font-medium text-white hover:bg-amber-600 focus:ring-2 focus:ring-amber-400 focus:outline-none dark:bg-amber-600 dark:hover:bg-amber-500"
                     >
                         Dashboard
                     </Link>
-
                     <template v-else>
                         <Link
                             :href="login()"
-                            class="rounded-md border border-transparent px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                            class="rounded-md px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
                         >
                             Log in
                         </Link>
