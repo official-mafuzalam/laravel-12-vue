@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckUserStatus;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\TrackUserActivity;
@@ -20,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             TrackUserActivity::class,
         ]);
+
+        $middleware->web(append: [
+            CheckUserStatus::class,
+        ]);
+
 
         $middleware->web(append: [
             HandleAppearance::class,

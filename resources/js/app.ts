@@ -6,6 +6,10 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { initializeTheme } from './composables/useAppearance';
 
+// ✅ Import toast library
+import Toast from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
@@ -16,9 +20,18 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .mount(el);
+        const vueApp = createApp({ render: () => h(App, props) });
+
+        vueApp.use(plugin);
+
+        // ✅ Register Toast globally
+        vueApp.use(Toast, {
+            autoClose: 3000,
+            position: 'top-right',
+            theme: 'colored',
+        });
+
+        vueApp.mount(el);
     },
     progress: {
         color: '#4B5563',

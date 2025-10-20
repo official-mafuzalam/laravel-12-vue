@@ -45,7 +45,20 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+
+            // ✅ Add flash notifications support
+            'flash' => [
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
+                'warning' => fn() => $request->session()->get('warning'),
+                'info' => fn() => $request->session()->get('info'),
+            ],
+
+            // ✅ Optional: Add notification counts for badges
+            // 'notifications' => [
+            //     'unread_count' => fn() => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
+            // ],
         ];
     }
 }

@@ -32,6 +32,13 @@ class AuthenticatedSessionController extends Controller
     {
         $user = $request->validateCredentials();
 
+        // ✅ Check if user is blocked
+        if ($user->status === 'blocked') {
+            return back()->withErrors([
+                'email' => 'Your account has been blocked. Please contact administrator.',
+            ])->onlyInput('email');
+        }
+
         if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
             $request->session()->put([
                 'login.id' => $user->getKey(),

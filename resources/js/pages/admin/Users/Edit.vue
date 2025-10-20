@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
-import { index, show } from '@/routes/admin/users';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Activity, ArrowLeft, Mail, Save, Shield, User } from 'lucide-vue-next';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+
+// ✅ Import your route helpers
+import { index, show, update, status } from '@/routes/admin/users';
+import { ref } from 'vue';
 
 // ✅ Receive user data from Laravel
 const props = defineProps<{
@@ -12,51 +14,51 @@ const props = defineProps<{
         id: number;
         name: string;
         email: string;
-        role?: string;
-        status?: string;
+        status: 'active' | 'blocked';
         created_at?: string;
         updated_at?: string;
     };
 }>();
 
-// ✅ Form setup
-const form = useForm({
-    name: props.user.name,
-    email: props.user.email,
-    role: props.user.role || 'user',
-    status: props.user.status || 'active',
-});
-
-// ✅ Breadcrumbs
+// Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboard().url },
     { title: 'Users', href: index().url },
-    { title: `Edit ${props.user.name}`, href: '#' },
+    { title: `Edit ${props.user.name}`, href: '' },
 ];
 
-// ✅ Submit form
-function submit() {
-    form.put(route('admin.users.update', props.user.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            // Optional: Show success message or redirect
-        },
-        onError: (errors) => {
-            console.error('Update failed:', errors);
-        },
-    });
-}
+// ✅ Inertia form for editing a user
+const form = useForm({
+    name: props.user.name,
+    email: props.user.email,
+    password: '',
+    password_confirmation: '',
+});
 
-// ✅ Format date for display
-function formatDate(dateString: string) {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+// ✅ Show/hide password fields
+const showPasswordFields = ref(false);
+
+// ✅ Block/Unblock user function
+function toggleUserStatus() {
+    if (
+        confirm(
+            `Are you sure you want to ${props.user.status === 'active' ? 'block' : 'unblock'} this user?`,
+        )
+    ) {
+        // ✅ Use the route helper function
+        router.put(
+            status(props.user.id).url,
+            {
+                status: props.user.status === 'active' ? 'blocked' : 'active',
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Success handled by Laravel
+                },
+            },
+        );
+    }
 }
 </script>
 
@@ -64,193 +66,164 @@ function formatDate(dateString: string) {
     <Head :title="`Edit User - ${user.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6">
-            <!-- Header -->
+        <div
+            class="flex flex-col gap-4 rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+        >
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
+                <h2
+                    class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+                >
+                    Edit User
+                </h2>
+                <div class="flex space-x-2">
+                    <Link
+                        :href="show(user.id)"
+                        class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    >
+                        View Profile
+                    </Link>
                     <Link
                         :href="index()"
-                        class="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                        class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
                     >
-                        <ArrowLeft class="h-4 w-4" />
                         Back to Users
                     </Link>
-                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
-                    <h1
-                        class="text-2xl font-bold text-gray-900 dark:text-gray-100"
-                    >
-                        Edit User
-                    </h1>
                 </div>
-
-                <Link
-                    :href="show(user.id)"
-                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                >
-                    <User class="h-4 w-4" />
-                    View Profile
-                </Link>
             </div>
 
-            <!-- Main Content -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <!-- Form Section -->
-                <div class="lg:col-span-2">
-                    <div
-                        class="rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border"
-                    >
-                        <form @submit.prevent="submit" class="space-y-6">
-                            <!-- Name Field -->
-                            <div>
-                                <label
-                                    for="name"
-                                    class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    <User class="h-4 w-4" />
-                                    Full Name
-                                </label>
-                                <input
-                                    id="name"
-                                    v-model="form.name"
-                                    type="text"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 transition-colors focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    :class="{
-                                        'border-red-500 dark:border-red-400':
-                                            form.errors.name,
-                                    }"
-                                    placeholder="Enter full name"
-                                />
-                                <p
-                                    v-if="form.errors.name"
-                                    class="mt-1 text-sm text-red-600 dark:text-red-400"
-                                >
-                                    {{ form.errors.name }}
-                                </p>
-                            </div>
-
-                            <!-- Email Field -->
-                            <div>
-                                <label
-                                    for="email"
-                                    class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    <Mail class="h-4 w-4" />
-                                    Email Address
-                                </label>
-                                <input
-                                    id="email"
-                                    v-model="form.email"
-                                    type="email"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 transition-colors focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    :class="{
-                                        'border-red-500 dark:border-red-400':
-                                            form.errors.email,
-                                    }"
-                                    placeholder="Enter email address"
-                                />
-                                <p
-                                    v-if="form.errors.email"
-                                    class="mt-1 text-sm text-red-600 dark:text-red-400"
-                                >
-                                    {{ form.errors.email }}
-                                </p>
-                            </div>
-
-                            <!-- Role Field -->
-                            <div>
-                                <label
-                                    for="role"
-                                    class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    <Shield class="h-4 w-4" />
-                                    Role
-                                </label>
-                                <select
-                                    id="role"
-                                    v-model="form.role"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 transition-colors focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    :class="{
-                                        'border-red-500 dark:border-red-400':
-                                            form.errors.role,
-                                    }"
-                                >
-                                    <option value="user">User</option>
-                                    <option value="moderator">Moderator</option>
-                                    <option value="admin">Administrator</option>
-                                </select>
-                                <p
-                                    v-if="form.errors.role"
-                                    class="mt-1 text-sm text-red-600 dark:text-red-400"
-                                >
-                                    {{ form.errors.role }}
-                                </p>
-                            </div>
-
-                            <!-- Status Field -->
-                            <div>
-                                <label
-                                    for="status"
-                                    class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    <Activity class="h-4 w-4" />
-                                    Status
-                                </label>
-                                <select
-                                    id="status"
-                                    v-model="form.status"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 transition-colors focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    :class="{
-                                        'border-red-500 dark:border-red-400':
-                                            form.errors.status,
-                                    }"
-                                >
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="suspended">Suspended</option>
-                                </select>
-                                <p
-                                    v-if="form.errors.status"
-                                    class="mt-1 text-sm text-red-600 dark:text-red-400"
-                                >
-                                    {{ form.errors.status }}
-                                </p>
-                            </div>
-
-                            <!-- Form Actions -->
-                            <div
-                                class="flex items-center justify-between border-t border-gray-200 pt-6 dark:border-gray-600"
-                            >
-                                <Link
-                                    :href="index()"
-                                    class="px-4 py-2 text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                                >
-                                    Cancel
-                                </Link>
-                                <button
-                                    type="submit"
-                                    :disabled="form.processing"
-                                    class="flex items-center gap-2 rounded-lg bg-amber-500 px-6 py-2 text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <Save class="h-4 w-4" />
-                                    {{
-                                        form.processing
-                                            ? 'Saving...'
-                                            : 'Save Changes'
-                                    }}
-                                </button>
-                            </div>
-                        </form>
+                <form
+                    @submit.prevent="
+                        form.put(update(user.id).url, { preserveState: true })
+                    "
+                    class="col-span-2 mt-4 space-y-4"
+                >
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                        >
+                            Name
+                        </label>
+                        <input
+                            v-model="form.name"
+                            type="text"
+                            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                            placeholder="Enter name"
+                        />
+                        <span
+                            v-if="form.errors.name"
+                            class="text-sm text-red-500"
+                            >{{ form.errors.name }}</span
+                        >
                     </div>
-                </div>
 
-                <!-- Sidebar Information -->
-                <div class="space-y-6">
-                    <!-- User Summary -->
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                        >
+                            Email
+                        </label>
+                        <input
+                            v-model="form.email"
+                            type="email"
+                            class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                            placeholder="Enter email"
+                        />
+                        <span
+                            v-if="form.errors.email"
+                            class="text-sm text-red-500"
+                            >{{ form.errors.email }}</span
+                        >
+                    </div>
+
+                    <!-- Password Update Section -->
                     <div
-                        class="rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border"
+                        class="border-t border-gray-200 pt-6 dark:border-gray-600"
+                    >
+                        <div class="mb-4 flex items-center justify-between">
+                            <h4
+                                class="text-lg font-medium text-gray-900 dark:text-gray-100"
+                            >
+                                Password Update
+                            </h4>
+                            <button
+                                type="button"
+                                @click="
+                                    showPasswordFields = !showPasswordFields
+                                "
+                                class="text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                            >
+                                {{
+                                    showPasswordFields
+                                        ? 'Cancel'
+                                        : 'Change Password'
+                                }}
+                            </button>
+                        </div>
+
+                        <div
+                            v-if="showPasswordFields"
+                            class="space-y-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800"
+                        >
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                                >
+                                    New Password
+                                </label>
+                                <input
+                                    v-model="form.password"
+                                    type="password"
+                                    class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                                    placeholder="Enter new password"
+                                />
+                                <span
+                                    v-if="form.errors.password"
+                                    class="text-sm text-red-500"
+                                    >{{ form.errors.password }}</span
+                                >
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                                >
+                                    Confirm New Password
+                                </label>
+                                <input
+                                    v-model="form.password_confirmation"
+                                    type="password"
+                                    class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                                    placeholder="Confirm new password"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button
+                            type="reset"
+                            @click="form.reset()"
+                            class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                        >
+                            Reset
+                        </button>
+                        <button
+                            type="submit"
+                            class="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                        >
+                            Update User
+                        </button>
+                    </div>
+                </form>
+
+                <!-- User Information Card -->
+                <div class="col-span-1 space-y-4">
+                    <div
+                        class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <h3
-                            class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100"
+                            class="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100"
                         >
                             User Information
                         </h3>
@@ -270,8 +243,13 @@ function formatDate(dateString: string) {
                                 >
                                 <span
                                     class="font-medium text-gray-900 dark:text-gray-100"
-                                    >{{ formatDate(user.created_at) }}</span
                                 >
+                                    {{
+                                        new Date(
+                                            user.created_at,
+                                        ).toLocaleDateString()
+                                    }}
+                                </span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400"
@@ -279,44 +257,16 @@ function formatDate(dateString: string) {
                                 >
                                 <span
                                     class="font-medium text-gray-900 dark:text-gray-100"
-                                    >{{ formatDate(user.updated_at) }}</span
                                 >
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Current Status -->
-                    <div
-                        class="rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border"
-                    >
-                        <h3
-                            class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100"
-                        >
-                            Current Status
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span
-                                    class="text-sm text-gray-600 dark:text-gray-400"
-                                    >Role:</span
-                                >
-                                <span
-                                    class="rounded-full px-2 py-1 text-xs font-medium capitalize"
-                                    :class="{
-                                        'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200':
-                                            user.role === 'admin',
-                                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200':
-                                            user.role === 'moderator',
-                                        'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200':
-                                            user.role === 'user',
-                                    }"
-                                >
-                                    {{ user.role }}
+                                    {{
+                                        new Date(
+                                            user.updated_at,
+                                        ).toLocaleDateString()
+                                    }}
                                 </span>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span
-                                    class="text-sm text-gray-600 dark:text-gray-400"
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400"
                                     >Status:</span
                                 >
                                 <span
@@ -324,10 +274,8 @@ function formatDate(dateString: string) {
                                     :class="{
                                         'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200':
                                             user.status === 'active',
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200':
-                                            user.status === 'inactive',
                                         'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200':
-                                            user.status === 'suspended',
+                                            user.status === 'blocked',
                                     }"
                                 >
                                     {{ user.status }}
@@ -338,33 +286,36 @@ function formatDate(dateString: string) {
 
                     <!-- Quick Actions -->
                     <div
-                        class="rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border"
+                        class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                     >
                         <h3
-                            class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100"
+                            class="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100"
                         >
                             Quick Actions
                         </h3>
                         <div class="space-y-2">
+                            <button
+                                @click="toggleUserStatus"
+                                class="w-full rounded-md px-3 py-2 text-sm font-medium transition-colors"
+                                :class="{
+                                    'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800':
+                                        user.status === 'active',
+                                    'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800':
+                                        user.status === 'blocked',
+                                }"
+                            >
+                                {{
+                                    user.status === 'active'
+                                        ? 'Block User'
+                                        : 'Unblock User'
+                                }}
+                            </button>
                             <Link
                                 :href="show(user.id)"
-                                class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                class="flex w-full items-center justify-center rounded-md bg-blue-100 px-3 py-2 text-sm font-medium text-blue-800 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800"
                             >
-                                <User class="h-4 w-4" />
-                                View Profile
+                                View Full Profile
                             </Link>
-                            <button
-                                v-if="user.status !== 'suspended'"
-                                @click="
-                                    form.status = 'suspended';
-                                    submit();
-                                "
-                                :disabled="form.processing"
-                                class="flex w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900"
-                            >
-                                <Activity class="h-4 w-4" />
-                                Suspend User
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -372,4 +323,3 @@ function formatDate(dateString: string) {
         </div>
     </AppLayout>
 </template>
-``
