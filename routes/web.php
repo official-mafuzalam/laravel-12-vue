@@ -27,8 +27,15 @@ Route::middleware(['auth', 'verified', 'role:super_admin|admin|user'])->prefix('
 Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('admin-dashboard')->group(function () {
 
     Route::resource('roles', RoleController::class)->names('admin.roles');
+    // Additional permission routes
+    Route::post('roles/{role}/permissions', [RoleController::class, 'givePermission'])->name('roles.permissions.give');
+    Route::delete('roles/{role}/permissions/{permission}', [RoleController::class, 'revokePermission'])->name('roles.permissions.revoke');
 
     Route::resource('permissions', PermissionController::class)->names('admin.permissions');
+    Route::post('/permissions/{permission}/roles', [PermissionController::class, 'givePermission'])->name('admin.permissions.role');
+    Route::delete('/permissions/{permission}/roles/{role}', [PermissionController::class, 'removeRole'])->name('admin.permissions.roles.revoke');
+
+
 
     Route::resource('users', UserController::class)->names('admin.users');
     Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])->name('admin.users.status');

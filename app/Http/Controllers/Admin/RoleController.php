@@ -11,93 +11,55 @@ use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        // $this->authorize('view roles');
-
         $roles = Role::with('permissions')
             ->withCount('users')
-            ->get();
+            ->paginate(10);
 
         return Inertia::render('admin/Roles/Index', [
             'roles' => $roles,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $this->authorize('create roles');
-
         $permissions = Permission::all()->groupBy(function ($permission) {
-            return explode(' ', $permission->name)[0]; // Group by first word (e.g., 'user', 'post')
+            return explode(' ', $permission->name)[0] ?? 'general';
         });
 
-        return Inertia::render('Admin/Roles/Create', [
+        return Inertia::render('admin/Roles/Create', [
             'permissions' => $permissions,
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $this->authorize('create roles');
-
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-            'permissions' => 'required|array',
-            'permissions.*' => 'exists:permissions,name',
+            'name' => ['required', 'min:3', 'unique:roles,name'],
+            'permissions' => ['sometimes', 'array'],
         ]);
 
         DB::transaction(function () use ($validated) {
             $role = Role::create(['name' => $validated['name']]);
-            $role->syncPermissions($validated['permissions']);
+
+            if (isset($validated['permissions'])) {
+                $role->syncPermissions($validated['permissions']);
+            }
         });
 
         return redirect()->route('admin.roles.index')
             ->with('success', 'Role created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Role $role)
+    public function edit($id)
     {
-        $this->authorize('view roles');
-
-        $role->load('permissions', 'users');
-
-        return Inertia::render('Admin/Roles/Show', [
-            'role' => $role,
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Role $role)
-    {
-        $this->authorize('edit roles');
-
-        // Prevent editing of super admin role (optional)
-        if ($role->name === 'super-admin') {
-            abort(403, 'Cannot edit super admin role.');
-        }
-
+        $role = Role::with('permissions')->findOrFail($id);
         $permissions = Permission::all()->groupBy(function ($permission) {
-            return explode(' ', $permission->name)[0];
+            return explode(' ', $permission->name)[0] ?? 'general';
         });
 
-        $role->load('permissions');
-
-        return Inertia::render('Admin/Roles/Edit', [
+        return Inertia::render('admin/Roles/Edit', [
             'role' => [
                 'id' => $role->id,
                 'name' => $role->name,
@@ -107,44 +69,30 @@ class RoleController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Role $role)
+    public function update(Request $request, $id)
     {
-        $this->authorize('edit roles');
-
-        // Prevent updating super admin role (optional)
-        if ($role->name === 'super-admin') {
-            abort(403, 'Cannot update super admin role.');
-        }
+        $role = Role::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
-            'permissions' => 'required|array',
-            'permissions.*' => 'exists:permissions,name',
+            'name' => ['required', 'min:3', 'unique:roles,name,' . $role->id],
+            'permissions' => ['sometimes', 'array'],
         ]);
 
         DB::transaction(function () use ($role, $validated) {
             $role->update(['name' => $validated['name']]);
-            $role->syncPermissions($validated['permissions']);
+
+            if (isset($validated['permissions'])) {
+                $role->syncPermissions($validated['permissions']);
+            }
         });
 
         return redirect()->route('admin.roles.index')
             ->with('success', 'Role updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Role $role)
+    public function destroy($id)
     {
-        $this->authorize('delete roles');
-
-        // Prevent deleting super admin role (optional)
-        if ($role->name === 'super-admin') {
-            abort(403, 'Cannot delete super admin role.');
-        }
+        $role = Role::findOrFail($id);
 
         // Check if role has users
         if ($role->users()->count() > 0) {
@@ -158,38 +106,28 @@ class RoleController extends Controller
             ->with('success', 'Role deleted successfully.');
     }
 
-    /**
-     * Bulk delete roles
-     */
-    public function bulkDestroy(Request $request)
+    public function givePermission(Request $request, Role $role)
     {
-        $this->authorize('delete roles');
-
-        $validated = $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:roles,id',
+        $request->validate([
+            'permission' => ['required', 'exists:permissions,name']
         ]);
 
-        $roles = Role::whereIn('id', $validated['ids'])
-            ->where('name', '!=', 'super-admin') // Prevent deleting super admin
-            ->get();
-
-        // Check if any roles have users
-        $rolesWithUsers = $roles->filter(function ($role) {
-            return $role->users()->count() > 0;
-        });
-
-        if ($rolesWithUsers->count() > 0) {
-            return response()->json([
-                'error' => 'Some roles have users assigned and cannot be deleted.',
-                'roles_with_users' => $rolesWithUsers->pluck('name')
-            ], 422);
+        if ($role->hasPermissionTo($request->permission)) {
+            return back()->with('info', 'Permission already exists.');
         }
 
-        Role::whereIn('id', $validated['ids'])
-            ->where('name', '!=', 'super-admin')
-            ->delete();
+        $role->givePermissionTo($request->permission);
 
-        return response()->json(['message' => 'Selected roles deleted successfully.']);
+        return back()->with('success', 'Permission added successfully.');
+    }
+
+    public function revokePermission(Role $role, Permission $permission)
+    {
+        if ($role->hasPermissionTo($permission)) {
+            $role->revokePermissionTo($permission);
+            return back()->with('success', 'Permission revoked successfully.');
+        }
+
+        return back()->with('info', 'Permission does not exist.');
     }
 }

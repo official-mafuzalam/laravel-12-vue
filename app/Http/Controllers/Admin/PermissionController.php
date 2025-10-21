@@ -4,62 +4,98 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    //
+
+    public function permission()
     {
-        //
+        $permission = Permission::paginate(10);
+
+        return view('admin.permission.index', compact('permission'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+
+    public function permissionCreatePage()
     {
-        //
+
+        return view('admin.permission.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function permissionCreate(Request $request)
     {
-        //
+        $validated = $request->validate(['name' => ['required']]);
+
+        Permission::create($validated);
+
+        return to_route('admin.permission');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function permissionEditPage($id)
     {
-        //
+        $roles = Role::all();
+
+        $permission = Permission::findOrFail($id);
+
+        return view('admin.permission.edit', compact('permission', 'roles'));
+
+        // echo "<pre>";
+        // print_r($request->toArray());
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function permissionUpdate(Request $request, $id)
     {
-        //
+        $validated = $request->validate(['name' => ['required']]);
+        // Find the permission by its ID
+        $permission = Permission::findOrFail($id);
+
+        $permission->update($validated);
+
+        // Redirect to a success page or return a response as needed
+        return redirect()->route('admin.permission')->with('success', 'Permission updated successfully!');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function givePermission(Request $request, Permission $permission)
     {
-        //
+        if ($permission->hasRole($request->role)) {
+            return back()->with('message', 'Role exists.');
+        }
+
+        $permission->assignRole($request->role);
+        return back()->with('message', 'Role assigned.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function removeRole(Permission $permission, Role $role)
     {
-        //
+        if ($permission->hasRole($role)) {
+            $permission->removeRole($role);
+            return back()->with('message', 'Role removed.');
+        }
+
+        return back()->with('message', 'Role not exists.');
     }
+
+
+    public function checkPer()
+    {
+        $userPermissions = auth()->user()->getAllPermissions()->pluck('name');
+        // return view('your.view', compact('userPermissions'));
+
+        echo "<pre>";
+        print_r($userPermissions->toArray());
+
+    }
+
+
+
+
+
+
+
+
+
 }

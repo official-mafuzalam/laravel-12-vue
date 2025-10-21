@@ -12,17 +12,29 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import permissions from '@/routes/admin/permissions';
+import roles from '@/routes/admin/roles';
+import users from '@/routes/admin/users';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { LayoutGrid, ArrowUpRightFromSquare, Users } from 'lucide-vue-next';
+import { ArrowUpRightFromSquare, Key, LayoutGrid, Shield, Users } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
-import users from '@/routes/admin/users';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Roles',
+        href: roles.index(),
+        icon: Shield,
+    },
+    {
+        title: 'Permissions',
+        href: permissions.index(),
+        icon: Key,
     },
     {
         title: 'Users',
