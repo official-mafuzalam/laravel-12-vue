@@ -1,130 +1,85 @@
+<script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+
+// ✅ Import your route helpers
+import { index, store } from '@/routes/admin/roles';
+
+// Breadcrumbs
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: dashboard().url },
+    { title: 'Roles', href: index().url },
+    { title: 'Create', href: '' },
+];
+
+// ✅ Inertia form for creating a role
+const form = useForm({
+    name: '',
+});
+</script>
+
 <template>
-    <AdminLayout>
-        <div class="p-6">
-            <!-- Header -->
-            <div class="mb-6 flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-900">
+    <Head title="Create Role" />
+
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div
+            class="flex flex-col gap-4 rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+        >
+            <div class="flex items-center justify-between">
+                <h2
+                    class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+                >
                     Create New Role
-                </h1>
+                </h2>
                 <Link
-                    :href="route('admin.roles.index')"
-                    class="text-gray-600 hover:text-gray-900"
+                    :href="index()"
+                    class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
                 >
                     Back to Roles
                 </Link>
             </div>
 
-            <!-- Form -->
-            <div class="rounded-lg bg-white p-6 shadow-md">
-                <form @submit.prevent="submit">
-                    <!-- Role Name -->
-                    <div class="mb-6">
-                        <label
-                            for="name"
-                            class="mb-2 block text-sm font-medium text-gray-700"
-                        >
-                            Role Name *
-                        </label>
-                        <input
-                            type="text"
-                            id="name"
-                            v-model="form.name"
-                            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
-                            required
-                        />
-                        <div
-                            v-if="form.errors.name"
-                            class="mt-1 text-sm text-red-600"
-                        >
-                            {{ form.errors.name }}
-                        </div>
-                    </div>
+            <form
+                @submit.prevent="form.post(store().url, { preserveState: true })"
+                class="mt-4 space-y-4"
+            >
+                <div>
+                    <label
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                    >
+                        Role Name
+                    </label>
+                    <input
+                        v-model="form.name"
+                        type="text"
+                        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                        placeholder="Enter name"
+                    />
+                    <span
+                        v-if="form.errors.name"
+                        class="text-sm text-red-500"
+                        >{{ form.errors.name }}</span
+                    >
+                </div>
 
-                    <!-- Permissions -->
-                    <div class="mb-6">
-                        <label
-                            class="mb-3 block text-sm font-medium text-gray-700"
-                        >
-                            Permissions
-                        </label>
-
-                        <div
-                            v-for="(groupPermissions, groupName) in permissions"
-                            :key="groupName"
-                            class="mb-6"
-                        >
-                            <h3
-                                class="mb-3 text-lg font-medium text-gray-900 capitalize"
-                            >
-                                {{ groupName }}
-                            </h3>
-                            <div
-                                class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
-                            >
-                                <label
-                                    v-for="permission in groupPermissions"
-                                    :key="permission.id"
-                                    class="flex items-center space-x-2 rounded border border-gray-200 p-2 hover:bg-gray-50"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        :value="permission.name"
-                                        v-model="form.permissions"
-                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <span class="text-sm text-gray-700">{{
-                                        permission.name
-                                    }}</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div
-                            v-if="form.errors.permissions"
-                            class="mt-1 text-sm text-red-600"
-                        >
-                            {{ form.errors.permissions }}
-                        </div>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex justify-end space-x-3">
-                        <Link
-                            :href="route('admin.roles.index')"
-                            class="rounded-md bg-gray-300 px-4 py-2 text-gray-700 transition duration-200 hover:bg-gray-400"
-                        >
-                            Cancel
-                        </Link>
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="rounded-md bg-blue-500 px-4 py-2 text-white transition duration-200 hover:bg-blue-600 disabled:opacity-50"
-                        >
-                            {{
-                                form.processing ? 'Creating...' : 'Create Role'
-                            }}
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <button
+                        type="reset"
+                        @click="form.reset()"
+                        class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    >
+                        Reset
+                    </button>
+                    <button
+                        type="submit"
+                        class="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                    >
+                        Create
+                    </button>
+                </div>
+            </form>
         </div>
-    </AdminLayout>
+    </AppLayout>
 </template>
-
-<script setup>
-import AdminLayout from '@/layouts/AppLayout.vue';
-import { Link, useForm } from '@inertiajs/vue3';
-
-const props = defineProps({
-    permissions: Object,
-});
-
-const form = useForm({
-    name: '',
-    permissions: [],
-});
-
-const submit = () => {
-    form.post(route('admin.roles.store'));
-};
-</script>

@@ -1,3 +1,4 @@
+<!-- GlobalToast.vue -->
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { watch } from 'vue';
@@ -15,5 +16,3 @@ watch(
   { deep: true, immediate: true }
 );
 </script>
-
-<!-- <template></template> -->

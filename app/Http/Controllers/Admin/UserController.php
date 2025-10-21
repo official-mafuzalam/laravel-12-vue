@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -69,6 +71,12 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $user->load(['roles', 'permissions']);
+
+        // Get all roles and permissions for assignment
+        $allRoles = Role::orderBy('name')->get();
+        $allPermissions = Permission::orderBy('name')->get();
+
         return Inertia::render('admin/Users/Show', [
             'user' => [
                 'id' => $user->id,
@@ -78,7 +86,11 @@ class UserController extends Controller
                 'last_seen_at' => $user->last_seen_at,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
+                'roles' => $user->roles,
+                'permissions' => $user->permissions,
             ],
+            'allRoles' => $allRoles,
+            'allPermissions' => $allPermissions,
         ]);
     }
 
@@ -166,7 +178,7 @@ class UserController extends Controller
             $this->invalidateUserSessions($user);
         }
 
-        return redirect()->route('admin.users.edit', $user)
+        return redirect()->route('admin.users.show', $user)
             ->with('success', "User {$action} successfully!");
     }
 
@@ -201,4 +213,55 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', "User {$userName} deleted successfully!");
     }
+
+    public function assignRole(Request $request, User $user)
+    {
+        $request->validate([
+            'role' => ['required', 'exists:roles,name']
+        ]);
+
+        if ($user->hasRole($request->role)) {
+            return back()->with('info', 'User already has this role.');
+        }
+
+        $user->assignRole($request->role);
+
+        return back()->with('success', 'Role assigned successfully.');
+    }
+
+    public function removeRole(User $user, Role $role)
+    {
+        if ($user->hasRole($role)) {
+            $user->removeRole($role);
+            return back()->with('success', 'Role removed successfully.');
+        }
+
+        return back()->with('info', 'User does not have this role.');
+    }
+
+    public function givePermission(Request $request, User $user)
+    {
+        $request->validate([
+            'permission' => ['required', 'exists:permissions,name']
+        ]);
+
+        if ($user->hasPermissionTo($request->permission)) {
+            return back()->with('info', 'User already has this permission.');
+        }
+
+        $user->givePermissionTo($request->permission);
+
+        return back()->with('success', 'Permission added successfully.');
+    }
+
+    public function revokePermission(User $user, Permission $permission)
+    {
+        if ($user->hasPermissionTo($permission)) {
+            $user->revokePermissionTo($permission);
+            return back()->with('success', 'Permission revoked successfully.');
+        }
+
+        return back()->with('info', 'User does not have this permission.');
+    }
+
 }

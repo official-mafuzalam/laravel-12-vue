@@ -52,6 +52,26 @@ class RoleController extends Controller
             ->with('success', 'Role created successfully.');
     }
 
+    public function show(Role $role)
+    {
+        // Load role with permissions and users count
+        $role->load([
+            'permissions' => function ($query) {
+                $query->orderBy('name');
+            }
+        ]);
+
+        $role->loadCount('users');
+
+        // Get all permissions for the assign permission dropdown
+        $allPermissions = Permission::orderBy('name')->get();
+
+        return Inertia::render('admin/Roles/Show', [
+            'role' => $role,
+            'allPermissions' => $allPermissions,
+        ]);
+    }
+
     public function edit($id)
     {
         $role = Role::with('permissions')->findOrFail($id);
@@ -130,4 +150,5 @@ class RoleController extends Controller
 
         return back()->with('info', 'Permission does not exist.');
     }
+    
 }

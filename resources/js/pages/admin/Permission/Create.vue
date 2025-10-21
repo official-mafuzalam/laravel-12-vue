@@ -3,34 +3,25 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { index, show, update } from '@/routes/admin/roles';
 
-// ✅ Receive role data from Laravel
-const props = defineProps<{
-    role: {
-        id: number;
-        name: string;
-        created_at?: string;
-        updated_at?: string;
-    };
-}>();
+// ✅ Import your route helpers
+import { index, store } from '@/routes/admin/permissions';
 
 // Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboard().url },
-    { title: 'Roles', href: index().url },
-    { title: `Edit ${props.role.name}`, href: '' },
+    { title: 'Permissions', href: index().url },
+    { title: 'Create', href: '' },
 ];
 
-// ✅ Inertia form for editing a role
+// ✅ Inertia form for creating a permission
 const form = useForm({
-    name: props.role.name,
+    name: '',
 });
-
 </script>
 
 <template>
-    <Head :title="`Edit Role - ${role.name}`" />
+    <Head title="Create Permission" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
@@ -40,35 +31,25 @@ const form = useForm({
                 <h2
                     class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
                 >
-                    Edit Role: {{ role.name }}
+                    Create New Permission
                 </h2>
-                <div class="flex space-x-2">
-                    <Link
-                        :href="show(role.id)"
-                        class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
-                    >
-                        View Role
-                    </Link>
-                    <Link
-                        :href="index()"
-                        class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
-                    >
-                        Back to Roles
-                    </Link>
-                </div>
+                <Link
+                    :href="index()"
+                    class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                >
+                    Back to Permission
+                </Link>
             </div>
 
             <form
-                @submit.prevent="
-                    form.put(update(role.id).url, { preserveState: true })
-                "
-                class="col-span-2 mt-4 space-y-4"
+                @submit.prevent="form.post(store().url, { preserveState: true })"
+                class="mt-4 space-y-4"
             >
                 <div>
                     <label
                         class="block text-sm font-medium text-gray-700 dark:text-gray-200"
                     >
-                        Role Name
+                        Permission Name
                     </label>
                     <input
                         v-model="form.name"
@@ -95,7 +76,7 @@ const form = useForm({
                         type="submit"
                         class="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 focus:ring-2 focus:ring-amber-400 focus:outline-none"
                     >
-                        Update Role
+                        Create
                     </button>
                 </div>
             </form>
