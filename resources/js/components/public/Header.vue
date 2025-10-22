@@ -9,6 +9,7 @@ import {
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { useSettings } from '@/composables/useSettings';
+import { home } from '@/routes';
 import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '../AppLogoIcon.vue';
 
@@ -71,11 +72,12 @@ const register = () => '/register';
             <!-- Brand / Logo -->
             <div class="flex items-center space-x-2">
                 <AppLogoIcon class="mr-2 size-8 fill-current text-amber-500" />
-                <h1
+                <Link
+                    :href="home()"
                     class="text-lg font-semibold text-gray-800 dark:text-gray-100"
                 >
                     {{ appName }}
-                </h1>
+                </Link>
             </div>
 
             <!-- Nav Links -->

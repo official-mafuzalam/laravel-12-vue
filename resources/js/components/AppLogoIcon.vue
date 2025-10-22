@@ -11,7 +11,7 @@ interface Props {
 
 const { className } = defineProps<Props>();
 
-const logoSrc = '/assets/icon.jpg';
+const logoSrc = '/assets/icon.png';
 
 </script>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSettings } from '@/composables/useSettings';
-import { Facebook, Github, Linkedin, Twitter, Youtube } from 'lucide-vue-next';
+import { Facebook, Github, Linkedin, Twitter, Youtube, Mail } from 'lucide-vue-next';
 
 const { setting } = useSettings();
 
@@ -50,8 +50,7 @@ const currentYear = new Date().getFullYear();
                     Terms of Service
                 </a>
                 <a
-                    v-if="setting('site_email')"
-                    :href="`mailto:${setting('site_email')}`"
+                    href="#"
                     class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 >
                     Contact
@@ -114,6 +113,17 @@ const currentYear = new Date().getFullYear();
                     <span class="sr-only">Youtube</span>
                     <!-- Youtube Icon -->
                     <Youtube class="h-5 w-5" />
+                </a>
+                <a
+                    v-if="setting('site_email')"
+                    :href="`mailto:${setting('site_email')}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                >
+                    <span class="sr-only">Email</span>
+                    <!-- Email Icon -->
+                    <Mail class="h-5 w-5" />
                 </a>
             </div>
         </div>

@@ -67,7 +67,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Settings',
+        title: 'Site Settings',
         href: index(),
         icon: Settings,
     }

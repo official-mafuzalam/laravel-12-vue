@@ -17,13 +17,10 @@ const siteName = setting('site_name', envSiteName);
     </Head>
 
     <MainLayout>
-        <!-- Page content goes into the default slot of MainLayout -->
-        <template #default>
-            <section class="p-6">
-                <h1 class="text-3xl font-bold text-blue-800 dark:text-blue-100">
-                    Welcome to {{ siteName }}
-                </h1>
-            </section>
-        </template>
+        <section class="p-6">
+            <h1 class="text-3xl font-bold text-blue-800 dark:text-blue-100">
+                Welcome to {{ siteName }}
+            </h1>
+        </section>
     </MainLayout>
 </template>
