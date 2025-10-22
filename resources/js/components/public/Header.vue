@@ -8,11 +8,13 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
+import { useSettings } from '@/composables/useSettings';
 import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '../AppLogoIcon.vue';
 
-// ✅ App name from .env
-const appName = import.meta.env.VITE_APP_NAME || 'My App';
+const { setting } = useSettings();
+
+const appName = setting('site_name', import.meta.env.VITE_APP_NAME || 'My App');
 const page = usePage();
 
 const components: { title: string; href: string; description: string }[] = [

@@ -12,6 +12,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index } from '@/routes/admin/settings';
 import permissions from '@/routes/admin/permissions';
 import roles from '@/routes/admin/roles';
 import users from '@/routes/admin/users';
@@ -24,7 +25,7 @@ import {
     Key,
     LayoutGrid,
     Shield,
-    Users,
+    Users, Settings
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import AppLogo from './AppLogo.vue';
@@ -65,6 +66,11 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Settings',
+        href: index(),
+        icon: Settings,
+    }
 ];
 
 const accountsNavItems: NavItem[] = [

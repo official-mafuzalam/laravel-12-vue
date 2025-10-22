@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Public\HomeController as PublicHomeController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,10 @@ Route::get('/', [PublicHomeController::class, 'index'])->name('home');
 Route::middleware(['auth', 'verified', 'role:super_admin|admin|user'])->prefix('admin-dashboard')->group(function () {
 
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
+
+
+    Route::get('/settings', [SettingController::class, 'index'])->name('admin.settings.index');
+    Route::put('/settings', [SettingController::class, 'update'])->name('admin.settings.update');
 
 });
 

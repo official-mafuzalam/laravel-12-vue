@@ -1,23 +1,29 @@
 <!-- resources/js/Pages/Welcome.vue -->
 <script setup lang="ts">
+import { useSettings } from '@/composables/useSettings';
 import MainLayout from '@/layouts/PublicLayout.vue';
 import { Head } from '@inertiajs/vue3';
+
+const { setting } = useSettings();
+
+const envSiteName = import.meta.env.VITE_APP_NAME || 'My App';
+const siteName = setting('site_name', envSiteName);
 </script>
 
 <template>
-  <Head title="Welcome">
-    <link rel="preconnect" href="https://rsms.me/" />
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-  </Head>
+    <Head title="Welcome">
+        <link rel="preconnect" href="https://rsms.me/" />
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    </Head>
 
-  <MainLayout>
-    <!-- Page content goes into the default slot of MainLayout -->
-    <template #default>
-      <!-- Replace the following with your page body -->
-      <section class="p-6">
-        <h1 class="text-3xl font-bold text-blue-800 dark:text-blue-100">Welcome to our site</h1>
-        <p class="mt-3">This is the home page body. Edit this section.</p>
-      </section>
-    </template>
-  </MainLayout>
+    <MainLayout>
+        <!-- Page content goes into the default slot of MainLayout -->
+        <template #default>
+            <section class="p-6">
+                <h1 class="text-3xl font-bold text-blue-800 dark:text-blue-100">
+                    Welcome to {{ siteName }}
+                </h1>
+            </section>
+        </template>
+    </MainLayout>
 </template>

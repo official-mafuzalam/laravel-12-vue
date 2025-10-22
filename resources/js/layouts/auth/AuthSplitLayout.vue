@@ -2,6 +2,12 @@
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { home } from '@/routes';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useSettings } from '@/composables/useSettings';
+
+const { setting } = useSettings();
+
+const envSiteName = import.meta.env.VITE_APP_NAME || 'My App';
+const siteName = setting('site_name', envSiteName);
 
 const page = usePage();
 const name = page.props.name;
@@ -26,7 +32,7 @@ defineProps<{
                 class="relative z-20 flex items-center text-lg font-medium"
             >
                 <AppLogoIcon class="mr-2 size-8 fill-current text-white" />
-                {{ name }}
+                {{ siteName }}
             </Link>
             <div v-if="quote" class="relative z-20 mt-auto">
                 <blockquote class="space-y-2">

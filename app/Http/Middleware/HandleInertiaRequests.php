@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -55,10 +57,20 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn() => $request->session()->get('info'),
             ],
 
-            // ✅ Optional: Add notification counts for badges
-            // 'notifications' => [
-            //     'unread_count' => fn() => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
-            // ],
+            // ✅ Add settings support (cached for performance)
+            'settings' => fn() => $this->getAllSettings(),
         ];
+    }
+
+    /**
+     * Get all settings from database with caching
+     */
+    protected function getAllSettings(): array
+    {
+        return Cache::remember('app_settings', 3600, function () { // Cache for 1 hour
+            return Setting::all()
+                ->pluck('value', 'key')
+                ->toArray();
+        });
     }
 }
