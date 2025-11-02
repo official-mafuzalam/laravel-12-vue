@@ -86,6 +86,7 @@ const register = () => '/register';
                     <!-- Centered Dropdown Menu -->
                     <NavigationMenuItem class="relative">
                         <NavigationMenuTrigger
+                            class="text-gray-100 dark:text-gray-200"
                             >Components</NavigationMenuTrigger
                         >
                         <NavigationMenuContent
@@ -117,7 +118,10 @@ const register = () => '/register';
                     </NavigationMenuItem>
 
                     <NavigationMenuItem className="hidden md:block">
-                        <NavigationMenuTrigger>Simple</NavigationMenuTrigger>
+                        <NavigationMenuTrigger
+                            class="text-gray-100 dark:text-gray-200"
+                            >Simple</NavigationMenuTrigger
+                        >
                         <NavigationMenuContent>
                             <ul className="grid w-[200px] gap-4">
                                 <li>
@@ -135,7 +139,9 @@ const register = () => '/register';
                         </NavigationMenuContent>
                     </NavigationMenuItem>
 
-                    <NavigationMenuItem>
+                    <NavigationMenuItem
+                        class="text-gray-100 dark:text-gray-200"
+                    >
                         <NavigationMenuLink
                             href="/docs/introduction"
                             :class="navigationMenuTriggerStyle()"
